@@ -146,6 +146,8 @@ func (m *GeoIP) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 	repl.Set("geoip.country_name", record.Country.Names.En)
 	if (len(record.Subdivisions) > 0) {
 		repl.Set("geoip.subdivision_name", record.Subdivisions[0].Names.En)
+	} else {
+		repl.Set("geoip.subdivision_name", nil)
 	}
 	repl.Set("geoip.city_name", record.City.Names.En)
 	repl.Set("geoip.accuracy_radius", record.Location.AccuracyRadius)

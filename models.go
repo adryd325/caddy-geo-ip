@@ -21,9 +21,14 @@ type Country struct {
 
 type Subdivision struct {
 	ISOCode string `maxminddb:"iso_code"`
+	Names   Names  `maxminddb:"names"`
 }
 
 type Subdivisions []Subdivision
+
+type City struct {
+	Names Names `maxminddb:"names"`
+}
 
 func (s Subdivisions) GetISOCodes() []string {
 	var result []string
@@ -44,4 +49,5 @@ type Record struct {
 	Country      Country      `maxminddb:"country"`
 	Location     Location     `maxminddb:"location"`
 	Subdivisions Subdivisions `maxminddb:"subdivisions"`
+	City         City         `maxminddb:"city"`
 }

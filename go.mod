@@ -1,4 +1,4 @@
-module github.com/shift72/caddy-geo-ip
+module github.com/adryd325/caddy-geo-ip
 
 go 1.16
 

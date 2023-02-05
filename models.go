@@ -43,6 +43,7 @@ func (s Subdivisions) CommaSeparatedISOCodes() string {
 
 type Location struct {
 	MetroCode int `maxminddb:"metro_code"`
+	AccuracyRadius int `maxminddb:"accuracy_radius"`
 }
 
 type Record struct {

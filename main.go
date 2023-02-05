@@ -144,7 +144,9 @@ func (m *GeoIP) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 	repl := r.Context().Value(caddy.ReplacerCtxKey).(*caddy.Replacer)
 	repl.Set("geoip.country_code", record.Country.ISOCode)
 	repl.Set("geoip.country_name", record.Country.Names.En)
+	repl.Set("geoip.subdivision_name", record.Subdivision[0].Names.En)
 	repl.Set("geoip.city_name", record.City.Names.En)
+	repl.Set("geoip.accuracy_radius", record.Location.AccuracyRadius)
 
 	m.logger.Debug(
 		"found maxmind data",

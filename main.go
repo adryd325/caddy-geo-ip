@@ -113,7 +113,10 @@ func (m *GeoIP) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 
 	trusted := caddyhttp.GetVar(r.Context(), caddyhttp.TrustedProxyVarKey).(bool)
 
-	ip := r.RemoteAddr;
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		m.logger.Warn("cannot split IP address", zap.String("address", r.RemoteAddr), zap.Error(err))
+	}
 
 	if m.TrustHeader != "" && r.Header.Get(m.TrustHeader) != "" {
 		if (m.RequireTrusted && trusted) || !m.RequireTrusted {
@@ -125,13 +128,8 @@ func (m *GeoIP) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 
 	m.logger.Debug("loading ip address", zap.String("remoteaddr", ip))
 
-	remoteIp, _, err := net.SplitHostPort(ip)
-	if err != nil {
-		m.logger.Warn("cannot split IP address", zap.String("address", ip), zap.Error(err))
-	}
-
 	// Get the record from the database
-	addr := net.ParseIP(remoteIp)
+	addr := net.ParseIP(ip)
 	if addr == nil {
 		m.logger.Warn("cannot parse IP address", zap.String("address", ip))
 		return next.ServeHTTP(w, r)

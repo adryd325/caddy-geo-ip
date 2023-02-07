@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
@@ -112,11 +113,13 @@ func (m *GeoIP) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 
 	trusted := caddyhttp.GetVar(r.Context(), caddyhttp.TrustedProxyVarKey).(bool)
 
-	ip = r.RemoteAddr;
+	ip := r.RemoteAddr;
 
 	if m.TrustHeader != "" && r.Header.Get(m.TrustHeader) != "" {
 		if (m.RequireTrusted && trusted) || !m.RequireTrusted {
-			ip = r.Header.Get(m.TrustHeader)
+			fwdFor := r.Header.Get(m.TrustHeader)
+			ips := strings.Split(fwdFor, ", ")
+			ip = ips[0]
 		} 
 	}
 

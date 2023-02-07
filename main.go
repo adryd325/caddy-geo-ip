@@ -50,6 +50,9 @@ type GeoIP struct {
 	// The header to trust instead of the `RemoteAddr`
 	TrustHeader string `json:"trust_header"`
 
+	// Only trust the above header when from these IP addresses
+	RequireTrusted bool `json:"require_trusted_proxy"`
+
 	// The Country Code to set if no value could be found
 	OverrideCountryCode string `json:"override_country_code"`
 
@@ -107,8 +110,12 @@ func (m *GeoIP) Provision(ctx caddy.Context) error {
 
 func (m *GeoIP) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
 
+	trusted := caddyhttp.GetVar(r.Context(), caddyhttp.TrustedProxyVarKey).(bool)
+
 	if m.TrustHeader != "" && r.Header.Get(m.TrustHeader) != "" {
-		r.RemoteAddr = r.Header.Get(m.TrustHeader)
+		if (m.RequireTrusted && trusted) || !m.RequireTrusted {
+			r.RemoteAddr = r.Header.Get(m.TrustHeader)
+		} 
 	}
 
 	m.logger.Debug("loading ip address", zap.String("remoteaddr", r.RemoteAddr))

@@ -60,6 +60,9 @@ func (m *GeoIP) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 
 		case "override_country_code":
 			d.Args(&m.OverrideCountryCode)
+		
+		case "require_trusted_proxy":
+			m.RequireTrusted = true;
 
 		}
 		if err != nil {

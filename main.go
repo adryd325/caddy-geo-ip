@@ -112,23 +112,25 @@ func (m *GeoIP) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 
 	trusted := caddyhttp.GetVar(r.Context(), caddyhttp.TrustedProxyVarKey).(bool)
 
+	ip = r.RemoteAddr;
+
 	if m.TrustHeader != "" && r.Header.Get(m.TrustHeader) != "" {
 		if (m.RequireTrusted && trusted) || !m.RequireTrusted {
-			r.RemoteAddr = r.Header.Get(m.TrustHeader)
+			ip = r.Header.Get(m.TrustHeader)
 		} 
 	}
 
-	m.logger.Debug("loading ip address", zap.String("remoteaddr", r.RemoteAddr))
+	m.logger.Debug("loading ip address", zap.String("remoteaddr", ip))
 
-	remoteIp, _, err := net.SplitHostPort(r.RemoteAddr)
+	remoteIp, _, err := net.SplitHostPort(ip)
 	if err != nil {
-		m.logger.Warn("cannot split IP address", zap.String("address", r.RemoteAddr), zap.Error(err))
+		m.logger.Warn("cannot split IP address", zap.String("address", ip), zap.Error(err))
 	}
 
 	// Get the record from the database
 	addr := net.ParseIP(remoteIp)
 	if addr == nil {
-		m.logger.Warn("cannot parse IP address", zap.String("address", r.RemoteAddr))
+		m.logger.Warn("cannot parse IP address", zap.String("address", ip))
 		return next.ServeHTTP(w, r)
 	}
 
@@ -144,7 +146,7 @@ func (m *GeoIP) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 	var record Record
 	err = m.state.dbInst.Lookup(addr, &record)
 	if err != nil {
-		m.logger.Warn("cannot lookup IP address", zap.String("address", r.RemoteAddr), zap.Error(err))
+		m.logger.Warn("cannot lookup IP address", zap.String("address", ip), zap.Error(err))
 		return err
 	}
 
@@ -161,7 +163,7 @@ func (m *GeoIP) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp
 
 	m.logger.Debug(
 		"found maxmind data",
-		zap.String("ip", r.RemoteAddr),
+		zap.String("ip", ip),
 		zap.String("country", record.Country.ISOCode),
 	)
 
